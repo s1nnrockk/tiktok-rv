@@ -1,0 +1,36 @@
+name: Repository Quality Checks
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate workflow YAML
+        run: |
+          ruby -e 'require "yaml"; ARGV.each { |path| YAML.parse_file(path); puts "Valid YAML: #{path}" }' \
+            .github/workflows/tiktok-patcher.yml \
+            .github/workflows/virustotal.yml \
+            .github/workflows/ci.yml
+
+      - name: Check local build script syntax
+        run: bash -n scripts/build-local.sh
+
+      - name: Check JavaScript syntax
+        run: node --check scripts/frida/verify.js
