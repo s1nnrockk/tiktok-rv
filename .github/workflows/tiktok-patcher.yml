@@ -21,7 +21,6 @@ jobs:
 
     permissions:
       contents: write # Needed to create a GitHub Release
-      id-token: write
 
     env:
       BUILD_VARIANT: ${{ github.event.inputs.variant || 'original' }}
@@ -446,10 +445,27 @@ jobs:
           fi
 
       - name: Sign Universal APKs
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          echo "${{ secrets.KEYSTORE_B64 }}" | base64 --decode > new.keystore
+          set -euo pipefail
 
-          APKSIGNER=$(ls $ANDROID_SDK_ROOT/build-tools/*/apksigner | tail -1)
+          : "${KEYSTORE_B64:?Missing KEYSTORE_B64 secret}"
+          : "${KEYSTORE_PASSWORD:?Missing KEYSTORE_PASSWORD secret}"
+          : "${KEY_ALIAS:?Missing KEY_ALIAS secret}"
+
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > new.keystore
+          chmod 600 new.keystore
+
+          KEYSTORE_PASSWORD_FILE="$(mktemp)"
+          trap 'rm -f "$KEYSTORE_PASSWORD_FILE" new.keystore' EXIT
+          printf '%s' "$KEYSTORE_PASSWORD" > "$KEYSTORE_PASSWORD_FILE"
+          chmod 600 "$KEYSTORE_PASSWORD_FILE"
+
+          APKSIGNER=$(find "$ANDROID_SDK_ROOT/build-tools" -type f -name apksigner | sort -V | tail -1)
+          test -n "$APKSIGNER"
 
           should_build() {
             [ "$BUILD_VARIANT" = "$1" ] || [ "$BUILD_VARIANT" = "both" ]
@@ -457,10 +473,18 @@ jobs:
 
           sign_variant() {
             VARIANT="$1"
-            $APKSIGNER sign --ks new.keystore \
-              --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
-              --ks-key-alias ${{ secrets.KEY_ALIAS }} \
-              --out "tiktok-rv-${VARIANT}.apk" "unsigned-merged-${VARIANT}.apk"
+            INPUT="unsigned-merged-${VARIANT}.apk"
+            OUTPUT="tiktok-rv-${VARIANT}.apk"
+
+            test -s "$INPUT"
+            "$APKSIGNER" sign \
+              --ks new.keystore \
+              --ks-pass "file:$KEYSTORE_PASSWORD_FILE" \
+              --ks-key-alias "$KEY_ALIAS" \
+              --out "$OUTPUT" "$INPUT"
+
+            "$APKSIGNER" verify "$OUTPUT"
+            echo "Verified signature: $OUTPUT"
           }
 
           if should_build original; then
