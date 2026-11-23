@@ -497,9 +497,12 @@ jobs:
 
       - name: Create GitHub Release
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          AAPT=$(ls $ANDROID_SDK_ROOT/build-tools/*/aapt | tail -1)
+          set -euo pipefail
+
+          AAPT=$(find "$ANDROID_SDK_ROOT/build-tools" -type f -name aapt | sort -V | tail -1)
+          test -n "$AAPT"
           ASSETS=()
 
           {
@@ -527,10 +530,20 @@ jobs:
             done
           } > release-notes.md
 
+          if [ "${#ASSETS[@]}" -eq 0 ]; then
+            echo "::error::No APK artifacts were produced; refusing to publish an empty release."
+            exit 1
+          fi
+
           TAG="v$(date +'%Y.%m.%d')"
-          # Delete existing release with same tag if it exists (idempotent re-runs)
-          gh release delete "$TAG" --yes 2>/dev/null || true
-          git push origin --delete "$TAG" 2>/dev/null || true
-          gh release create "$TAG" "${ASSETS[@]}" \
-            --title "tiktok-rv $TAG" \
-            --notes-file release-notes.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Updating existing release $TAG without deleting it..."
+            gh release upload "$TAG" "${ASSETS[@]}" --clobber
+            gh release edit "$TAG" \
+              --title "tiktok-rv $TAG" \
+              --notes-file release-notes.md
+          else
+            gh release create "$TAG" "${ASSETS[@]}" \
+              --title "tiktok-rv $TAG" \
+              --notes-file release-notes.md
+          fi
