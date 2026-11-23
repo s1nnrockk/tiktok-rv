@@ -14,6 +14,8 @@ Open **Settings → Secrets and variables → Actions → New repository secret*
 
 Keep a secure offline backup of the keystore and its password. The same signing key should be reused for future updates; replacing it can prevent Android from installing an update over an existing installation.
 
+The build now runs a preflight check before downloading dependencies. It stops early if any required signing secret is missing or if `KEYSTORE_B64` is not valid base64 data.
+
 Never paste secret values into issues, pull requests, chat messages, workflow logs, or source files.
 
 ## Optional settings
