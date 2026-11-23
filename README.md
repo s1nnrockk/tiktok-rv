@@ -96,7 +96,7 @@
 
 ### Антивирус определяет APK как Riskware / Repack
 
-Детекты вида `Android.Riskware.Repack.*` (Bitdefender и др.) — ожидаемы. Это эвристика «приложение было пересобрано и переподписано не оригинальным разработчиком», а мод именно так и устроен: это официальный APK TikTok с изменённым байткодом, подписанный ключом этого репозитория. Такие срабатывания не означают наличия вредоносного кода.
+Детекты вида `Android.Riskware.Repack.*` (Bitdefender и др.) — ожидаемы. Это эвристика «приложение было пересобрано и переподписано не оригинальным разработчиком», а мод именно так и устроен: это официальный APK TikTok с изменённым байткодом, подписанный ключом этого репозитория. Это не доказывает наличие вредоносного кода, но и не подтверждает безопасность APK. Не игнорируйте предупреждения и проверяйте источник сборки.
 
 Как проверить сборку самостоятельно:
 * В каждом релизе есть ссылка на отчёт VirusTotal.
@@ -104,7 +104,7 @@
 
 ### Видео не грузятся без VPN / загрузки сохраняются пустыми файлами
 
-Если первое видео играет, а следующие не загружаются или скачиваются пустыми файлами, — скорее всего, ваш провайдер блокирует или замедляет CDN-серверы TikTok (`*.tiktokcdn.com`). Это происходит на уровне сети, патч APK обойти это не может. Используйте VPN или средства обхода DPI.
+Если первое видео играет, а следующие не загружаются или скачиваются пустыми файлами, — скорее всего, ваш провайдер блокирует или замедляет CDN-серверы TikTok (`*.tiktokcdn.com`). Это происходит на уровне сети, патч APK обойти это не может. Проверьте доступность сервиса у оператора и действующие правила в вашем регионе. Сам APK не меняет сетевую маршрутизацию.
 
 ## Лицензия
 
@@ -216,7 +216,7 @@ Inside the menu you can configure:
 
 ### My antivirus flags the APK as Riskware / Repack
 
-Detections such as `Android.Riskware.Repack.*` (Bitdefender and others) are expected. The heuristic means "this app was rebuilt and re-signed by someone other than the original developer". That is exactly what this mod is: the official TikTok APK with modified bytecode, signed with this repository's key. The detection does not indicate malicious code.
+Detections such as `Android.Riskware.Repack.*` (Bitdefender and others) are expected. The heuristic means "this app was rebuilt and re-signed by someone other than the original developer". That is exactly what this mod is: the official TikTok APK with modified bytecode, signed with this repository's key. This detection alone neither proves malware nor proves that the APK is safe. Do not ignore warnings; verify the source and build provenance.
 
 To verify a build yourself:
 * Every release links to its VirusTotal report.
@@ -224,7 +224,7 @@ To verify a build yourself:
 
 ### Videos don't load without a VPN / downloads are saved as empty files
 
-If the first video plays but the next ones don't load, or downloads come out as empty files, your ISP is most likely blocking or throttling TikTok's CDN servers (`*.tiktokcdn.com`). This happens at the network level and an APK patch cannot work around it. Use a VPN or a DPI-bypass tool.
+If the first video plays but the next ones don't load, or downloads come out as empty files, your ISP is most likely blocking or throttling TikTok's CDN servers (`*.tiktokcdn.com`). This happens at the network level and an APK patch cannot work around it. Check service availability with your network provider and the rules that apply in your region. The APK itself does not change network routing.
 
 ## License
 
